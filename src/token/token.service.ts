@@ -2,19 +2,10 @@ import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Token, TokenDocument} from '../schemas/token.schema';
 import {Model} from 'mongoose';
-import {User, UserDocument} from '../schemas/user.schema';
 import {JwtService} from '@nestjs/jwt';
 import * as mongoose from 'mongoose';
-
-export type TokenType = {
-    username: string,
-    email: string,
-    password: string,
-    isActivated: string,
-    userId: string;
-    iat: number;
-    exp: number
-}
+import {TokenType} from "../types/token.type";
+import {TokenExpiredError} from "jsonwebtoken";
 
 @Injectable()
 export class TokenService {
@@ -24,32 +15,23 @@ export class TokenService {
     ) {
     }
 
-    getTestString() {
-        return 'test';
-    }
-
-    async findToken(refreshToken) {
-        return this.tokenModel.findOne({ refresh_token: refreshToken });
-    }
-
-    async validateRefreshToken(refreshToken: string) {
+    verifyAccessToken(token: string) {
         try {
-            return await this.jwtService.verify(refreshToken, { secret: `${process.env.SECRET}`, ignoreExpiration: false });
+            const decoded = this.jwtService.verify(token, {secret: `${process.env.SECRET_ACCESS}`, ignoreExpiration: false });
+            if (decoded) {
+                return token;
+            }
         } catch (e) {
-
+            if (e instanceof TokenExpiredError) {
+                return null;
+            }
         }
     }
 
-    async verifyRefreshTokenByToken(refreshToken: string) {
+    verifyRefreshToken(token: string) {
         try {
-            const token = await this.tokenModel.findOne({refresh_token: refreshToken});
-            await this.jwtService.verify(token.refresh_token, {
-                secret: `${process.env.SECRET}`,
-                ignoreExpiration: false
-            });
-            return this.jwtService.decode(refreshToken) as TokenType;
-        }
-        catch (e) {
+            return this.jwtService.verify(token, {secret: `${process.env.SECRET_REFRESH}`, ignoreExpiration: false }) as TokenType;
+        } catch (e) {
             return null;
         }
     }
@@ -57,24 +39,16 @@ export class TokenService {
     generateToken(payload: any) {
         const accessToken = this.jwtService.sign(payload, {
             expiresIn: '5m',
-            secret: `${process.env.SECRET}`,
+            secret: `${process.env.SECRET_ACCESS}`,
             algorithm: 'HS256',
         });
         const refreshToken = this.jwtService.sign(payload, {
             expiresIn: '20d',
-            secret: `${process.env.SECRET}`,
+            secret: `${process.env.SECRET_REFRESH}`,
             algorithm: 'HS256',
         });
 
-        return {accessToken, refreshToken};
-    }
-
-    async decodeVerifyToken(token: string) {
-        try {
-            await this.jwtService.verify(token, { secret: `${process.env.SECRET}`, ignoreExpiration: false })
-        }
-        catch (e) { return null; }
-        return this.jwtService.decode(token) as TokenType;
+        return { accessToken, refreshToken };
     }
 
     async saveRefreshToken(userId: mongoose.Types.ObjectId, refresh_token: string ) {

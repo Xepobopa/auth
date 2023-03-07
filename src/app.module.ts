@@ -1,12 +1,8 @@
-import {Module} from '@nestjs/common';
-import {AuthModule} from './auth/auth.module';
-import {UsersModule} from './users/users.module';
-import {AppController} from './app.controller';
-import {MongooseModule} from '@nestjs/mongoose';
-import {APP_GUARD} from "@nestjs/core";
-import {JwtAuthGuard} from "./auth/guard/jwt-auth.guard";
-import {TokenService} from "./token/token.service";
-import {TokenModule} from "./token/token.module";
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { TokenModule } from "./token/token.module";
 
 @Module({
     imports: [
@@ -19,7 +15,6 @@ import {TokenModule} from "./token/token.module";
             }),
         }),
     ],
-    controllers: [AppController],
     providers: [],
 })
 export class AppModule {

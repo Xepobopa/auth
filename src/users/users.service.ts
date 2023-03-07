@@ -7,7 +7,6 @@ import * as bcrypt from 'bcrypt';
 import {InjectModel} from '@nestjs/mongoose';
 import {User, UserDocument} from 'src/schemas/user.schema';
 import {Model} from 'mongoose';
-import {IUser} from '../interfaces/user.interface';
 import * as uuid from 'uuid';
 import {MailService} from '../mail/mail.service';
 import {UserDto} from '../dto/user.dto';
@@ -49,8 +48,8 @@ export class UsersService {
         return this.userModel.findOne({ id: id })
     }
 
-    async login(userData: UserDto) {
-        const user = await this.findOne(userData.username);
+    async login(username: string) {
+        const user = await this.findOne(username);
         await this.mailService.sendMail(user.email, user.activationLink);
         return user;
     }

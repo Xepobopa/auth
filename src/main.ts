@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from "cookie-parser";
 
+// for mail
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = String(0);
 
 async function bootstrap() {
