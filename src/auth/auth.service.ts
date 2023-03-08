@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { UserDocument } from '../schemas/user.schema';
 import { TokenService } from '../token/token.service';
 import { UserDto } from '../dto/user.dto';
+import {TokenDocument} from "../schemas/token.schema";
 
 @Injectable()
 export class AuthService {
@@ -24,11 +25,16 @@ export class AuthService {
 
     async refresh(token: string) {
         if (!token) {
-            throw new BadRequestException('refresh token is not valid');
+            throw new UnauthorizedException('refreshToken is not valid');
         }
 
         const decoded = await this.tokenService.verifyRefreshToken(token);
-        const {iat, exp, ...payload} = decoded;
+        const tokenFromDb: TokenDocument = await this.tokenService.findToken(token);
+        if (!decoded) {
+            throw new UnauthorizedException('refreshToken is not valid');
+        }
+
+        const payload = (await this.userService.findOneById(decoded.userId)).toObject({versionKey: false});
         return this.tokenService.generateToken(payload).accessToken;
     }
 

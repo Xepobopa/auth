@@ -7,10 +7,6 @@ import {TokenService} from "../../token/token.service";
 export class JwtAuthGuard extends AuthGuard('jwt') {
     handleRequest(err, user, info, context: ExecutionContext, status) {
         console.log({ err, user, info, context, status })
-        if (info instanceof TokenExpiredError) {
-            // TODO: cors redirect
-            context.switchToHttp().getResponse().redirect('http://localhost:5000/refresh');
-        }
         return user;
     }
 }

@@ -15,25 +15,16 @@ export class TokenService {
     ) {
     }
 
-    verifyAccessToken(token: string) {
-        try {
-            const decoded = this.jwtService.verify(token, {secret: `${process.env.SECRET_ACCESS}`, ignoreExpiration: false });
-            if (decoded) {
-                return token;
-            }
-        } catch (e) {
-            if (e instanceof TokenExpiredError) {
-                return null;
-            }
-        }
-    }
-
     verifyRefreshToken(token: string) {
         try {
             return this.jwtService.verify(token, {secret: `${process.env.SECRET_REFRESH}`, ignoreExpiration: false }) as TokenType;
         } catch (e) {
             return null;
         }
+    }
+
+    async findToken(token: string) {
+        return this.tokenModel.findOne({ refresh_token: token });
     }
 
     generateToken(payload: any) {

@@ -6,8 +6,8 @@ import { AuthService } from "../auth/auth.service";
 export class UsersController {
     constructor(private authService: AuthService) {}
 
-    @UseGuards(JwtAuthGuard)
     @Get('profiles')
+    @UseGuards(JwtAuthGuard)
     async getProfiles() {
         return await this.authService.getAll();
     }
